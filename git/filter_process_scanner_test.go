@@ -102,7 +102,7 @@ func TestFilterProcessScannerReadsRequestHeadersAndPayload(t *testing.T) {
 	pl := newPktline(nil, &from)
 	// Headers
 	require.Nil(t, pl.writePacketList([]string{
-		"foo=bar", "other=woot",
+		"foo=bar", "other=woot", "crazy=x=.bin",
 	}))
 	// Multi-line packet
 	require.Nil(t, pl.writePacketText("first"))
