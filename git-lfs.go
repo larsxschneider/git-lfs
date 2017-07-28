@@ -11,6 +11,8 @@ import (
 	"sync"
 	"syscall"
 	"time"
+	"runtime/pprof"
+	 "math/rand"
 
 	"github.com/git-lfs/git-lfs/commands"
 )
@@ -25,10 +27,30 @@ func main() {
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 
+	 s1 := rand.NewSource(time.Now().UnixNano())
+    r1 := rand.New(s1)
+	run := r1.Intn(100)
+
+	fcpu, err := ioutil.TempFile("/Users/lars/Temp/dump", fmt.Sprintf("cpu-%d-", run))
+    if err != nil {
+        os.Exit(1)
+    }
+    pprof.StartCPUProfile(fcpu)
+    defer pprof.StopCPUProfile()
+
+	fmem, err := ioutil.TempFile("/Users/lars/Temp/dump", fmt.Sprintf("mem-%d-", run))
+	if err != nil {
+		panic(err.Error())
+	}
+
+	if err := pprof.WriteHeapProfile(fmem); err != nil {
+		panic(err.Error())
+	}
+
 	go func() {
 		defer wg.Done()
 
-		f, err := ioutil.TempFile("/Users/lars/Temp/dump13", "lfs-logger")
+		f, err := ioutil.TempFile("/Users/lars/Temp/dump", fmt.Sprintf("memstat-%d-", run))
 		if err != nil {
 			return
 		}
@@ -61,6 +83,7 @@ func main() {
 			}
 			close(done)
 			wg.Wait()
+			fmem.Close()
 			os.Exit(exitCode + 128)
 		}
 	}()
