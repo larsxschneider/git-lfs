@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"os/exec"
 
+	"github.com/git-lfs/git-lfs/git"
 	"github.com/git-lfs/git-lfs/lfs"
 	"github.com/spf13/cobra"
 )
@@ -117,7 +117,7 @@ func pointerReader() (io.ReadCloser, error) {
 }
 
 func gitHashObject(by []byte) string {
-	cmd := exec.Command("git", "hash-object", "--stdin")
+	cmd := git.Exec("hash-object", "--stdin")
 	cmd.Stdin = bytes.NewReader(by)
 	out, err := cmd.Output()
 	if err != nil {

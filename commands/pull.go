@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/git-lfs/git-lfs/errors"
+	"github.com/git-lfs/git-lfs/git"
 	"github.com/git-lfs/git-lfs/lfs"
 	"github.com/git-lfs/git-lfs/tq"
 )
@@ -97,7 +98,7 @@ func (i *gitIndexer) Add(path string) error {
 
 	if i.cmd == nil {
 		// Fire up the update-index command
-		i.cmd = exec.Command("git", "update-index", "-q", "--refresh", "--stdin")
+		i.cmd = git.Exec("update-index", "-q", "--refresh", "--stdin").Cmd
 		i.cmd.Stdout = &i.output
 		i.cmd.Stderr = &i.output
 		stdin, err := i.cmd.StdinPipe()
