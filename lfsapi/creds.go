@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/git-lfs/git-lfs/subprocess"
 	"github.com/rubyist/tracerx"
 )
 
@@ -101,7 +102,8 @@ func (h *commandCredentialHelper) Approve(creds Creds) error {
 
 func (h *commandCredentialHelper) exec(subcommand string, input Creds) (Creds, error) {
 	output := new(bytes.Buffer)
-	cmd := exec.Command("git", "credential", subcommand)
+	// TODO
+	cmd := subprocess.ExecGit("credential", subcommand).Cmd
 	cmd.Stdin = bufferCreds(input)
 	cmd.Stdout = output
 	/*

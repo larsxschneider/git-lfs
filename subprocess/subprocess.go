@@ -10,8 +10,35 @@ import (
 	"strconv"
 	"strings"
 
+	// "github.com/git-lfs/git-lfs/tools"
 	"github.com/rubyist/tracerx"
 )
+
+// SimpleExec is a small wrapper around os/exec.Command.
+func ExecGit(args ...string) *Cmd {
+	// Before git 2.8, setting filters to blank causes lots of warnings, so use cat instead (slightly slower)
+	// Also pre 2.2 it failed completely. We used to use it anyway in git 2.2-2.7 and
+	// suppress the messages in stderr, but doing that with standard StderrPipe suppresses
+	// the git clone output (git thinks it's not a terminal) and makes it look like it's
+	// not working. You can get around that with https://github.com/kr/pty but that
+	// causes difficult issues with passing through Stdin for login prompts
+	// This way is simpler & more practical.
+	filterOverride := ""
+	// if !Config.IsGitVersionAtLeast("2.8.0") {
+	// 	filterOverride = "cat"
+	// }
+
+	args = append([]string{
+		"-c", fmt.Sprintf("filter.lfs.smudge=%v", filterOverride),
+		"-c", "filter.lfs.clean=",
+		"-c", "filter.lfs.process=",
+		"-c", "filter.lfs.required=false",
+	}, args...)
+	return ExecCommand(
+		"git",
+		args...,
+	)
+}
 
 // SimpleExec is a small wrapper around os/exec.Command.
 func SimpleExec(name string, args ...string) (string, error) {

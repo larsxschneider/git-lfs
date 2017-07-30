@@ -6,12 +6,12 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os/exec"
 	"regexp"
 	"strings"
 	"sync"
 
 	"github.com/git-lfs/git-lfs/errors"
+	"github.com/git-lfs/git-lfs/subprocess"
 	"github.com/rubyist/tracerx"
 )
 
@@ -173,7 +173,8 @@ func NewRevListScanner(include, excluded []string, opt *ScanRefsOptions) (*RevLi
 		return nil, err
 	}
 
-	cmd := exec.Command("git", args...)
+	// TODO!!
+	cmd := subprocess.ExecGit(args...).Cmd
 	if len(opt.WorkingDir) > 0 {
 		cmd.Dir = opt.WorkingDir
 	}
