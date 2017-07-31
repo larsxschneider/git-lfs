@@ -27,17 +27,22 @@ func main() {
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 
-	 s1 := rand.NewSource(time.Now().UnixNano())
-    r1 := rand.New(s1)
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
 	run := r1.Intn(100)
 
-	fcpu, err := ioutil.TempFile("/Users/lars/Temp/dump", fmt.Sprintf("cpu-%d-", run))
-    if err != nil {
-        os.Exit(1)
-    }
-    pprof.StartCPUProfile(fcpu)
-    defer pprof.StopCPUProfile()
 
+	// ### CPU PROFILING
+	fcpu, err := ioutil.TempFile("/Users/lars/Temp/dump", fmt.Sprintf("cpu-%d-", run))
+	if err != nil {
+		os.Exit(1)
+	}
+	pprof.StartCPUProfile(fcpu)
+	defer pprof.StopCPUProfile()
+
+
+	// ### MEMORY PROFILING
+	// TODO: doesn't work on macOS
 	fmem, err := ioutil.TempFile("/Users/lars/Temp/dump", fmt.Sprintf("mem-%d-", run))
 	if err != nil {
 		panic(err.Error())
@@ -47,6 +52,7 @@ func main() {
 		panic(err.Error())
 	}
 
+	// ### MEORY STATS
 	go func() {
 		defer wg.Done()
 
@@ -61,9 +67,7 @@ func main() {
 			select {
 			case <-time.After(100 * time.Millisecond):
 				var ms runtime.MemStats
-
 				runtime.ReadMemStats(&ms)
-
 				fmt.Fprintf(f, "%+v\n", ms)
 			case <-done:
 				return
