@@ -48,9 +48,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	if err := pprof.WriteHeapProfile(fmem); err != nil {
-		panic(err.Error())
-	}
+
 
 	// ### MEORY STATS
 	go func() {
@@ -78,6 +76,11 @@ func main() {
 	go func() {
 		for {
 			sig := <-c
+			if err := pprof.WriteHeapProfile(fmem); err != nil {
+				panic(err.Error())
+			}
+			fmem.Close()
+
 			once.Do(commands.Cleanup)
 			fmt.Fprintf(os.Stderr, "\nExiting because of %q signal.\n", sig)
 
@@ -87,11 +90,15 @@ func main() {
 			}
 			close(done)
 			wg.Wait()
-			fmem.Close()
 			os.Exit(exitCode + 128)
 		}
 	}()
 
 	commands.Run()
+
+	if err := pprof.WriteHeapProfile(fmem); err != nil {
+		panic(err.Error())
+	}
+	fmem.Close()
 	once.Do(commands.Cleanup)
 }
